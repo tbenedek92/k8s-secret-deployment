@@ -55,13 +55,13 @@ jobs:
       run: terraform apply -auto-approve -var='token=${{ secrets.LINODE_API_TOKEN }}'
     
     - name: Create k8s namesapce
-      working-directory: ${{ env.WORK-DIR }}/k8s
-      run: kubectl apply -f namespace.yaml --kubeconfig=kube-config
+      working-directory: ${{ env.WORK-DIR }}
+      run: kubectl apply -f ./k8s/namespace.yaml --kubeconfig=kube-config
       continue-on-error: true
 
     - name: Create secret in k8s
-      working-directory: ${{ env.WORK-DIR }}/k8s/service-account
-      run: kubectl apply --kubeconfig=kube-config -f .
+      working-directory: ${{ env.WORK-DIR }}
+      run: kubectl apply --kubeconfig=kube-config -f ./k8s/service-account/
       continue-on-error: true
       
     - name: set CLUSTER_NAME envvar
