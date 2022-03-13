@@ -33,7 +33,7 @@ jobs:
         name: checkout
         
       - name: Get image name to be scanned
-        run: echo "IMAGE=$(cat deployment.yaml | yq \".spec.template.spec.containers[].image\")" >> $GITHUB_ENV
+        run: echo "IMAGE=$(cat deployment.yaml | yq ".spec.template.spec.containers[].image")" >> $GITHUB_ENV
         
       - name: Scan image
         uses: anchore/scan-action@v3
