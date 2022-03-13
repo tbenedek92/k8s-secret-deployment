@@ -76,6 +76,7 @@ jobs:
           --verb=create \
           --verb=list \
           --verb=get \
+          --verb=patch \
           --resource=deployment,service,hpa,pdb,secret \
           --namespace=${{ env.NAMESPACE }} \
           --kubeconfig=kube-config
