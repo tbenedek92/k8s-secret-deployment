@@ -63,6 +63,12 @@ jobs:
       working-directory: ${{ env.WORK-DIR }}
       run: kubectl apply --kubeconfig=kube-config -f ./k8s/service-account/
       continue-on-error: true
+    - name: Deploy metrics-server
+      working-directory: ${{ env.WORK-DIR }}
+      run: helm upgrade --install metrics-server metrics-server/metrics-server \
+          --create-namespace --namespace metrics-server \
+          --kubeconfig ./kube-config
+          --values ./k8s/metrics-server-chart/values.yaml
       
     - name: set CLUSTER_NAME envvar
       working-directory: ${{ env.WORK-DIR }}
@@ -77,7 +83,6 @@ jobs:
       working-directory: ${{ env.WORK-DIR }}
       #run: echo 'CLUSTER_ENDPOINT=$(kubectl config view --kubeconfig=kube-config -o jsonpath="{.clusters[?(@.name == \"${{ env.CLUSTER_NAME }}\")].cluster.server}")' >> $GITHUB_ENV
       run: echo "SECRET_NAME=$(kubectl get sa ${{ env.SERVICE_ACCOUNT_NAME }} --kubeconfig=kube-config -n=${{ env.NAMESPACE }} -o json | jq -r .secrets[].name)" >> $GITHUB_ENV
-
 
     - name: create new kubeconfig
       working-directory: ${{ env.WORK-DIR }}
