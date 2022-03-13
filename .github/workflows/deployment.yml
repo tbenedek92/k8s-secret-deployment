@@ -32,7 +32,7 @@ jobs:
         uses: anchore/scan-action@v3
         with:
           image: "${{ env.IMAGE }}"
-          fail-build: false
+          fail-build: true
           severity-cutoff: high
 
       - name: create kube-config file
