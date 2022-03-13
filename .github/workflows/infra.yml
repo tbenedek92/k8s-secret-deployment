@@ -6,7 +6,7 @@ on:
     - infra-pipeline
     # paths:
     # - infra/**
-  pull_request:
+  # pull_request:
 
 jobs:
   terraform:
@@ -63,15 +63,17 @@ jobs:
 
     - name: Create the role which sets the necessary permissions for the SA
       working-directory: ./infra
-      run: kubectl create role secret-namespace-deploy-role \
+      run: |
+        kubectl create role secret-namespace-deploy-role \
           --verb=create \
           --resource=deployment,service,hpa,pdb \
           --namespace=secret-namespace \
           --kubeconfig=kube-config
 
-    - name: Create k8s SA
+    - name: Create rolebinding
       working-directory: ./infra
-      run: kubectl create rolebinding secret-namespace-deploy-rolebinding \
+      run: |
+        kubectl create rolebinding secret-namespace-deploy-rolebinding \
           --role=secret-namespace-deploy-role \ 
           --serviceaccount=secret-namespace:secret-namespace-deployment-sa \
           --namespace=secret-namespace \
