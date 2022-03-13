@@ -130,14 +130,8 @@ jobs:
     
     - name: base64 new kube-config
       working-directory: ${{ env.WORK-DIR }}
-      run: |
-          NEW_KUBECONFIG=$(cat << EOF 
-          ./new-kubeconfig 
-          EOF | base64)
-          >> $GITHUB_ENV
-          echo "NEW_KUBECONFIG<<EOF" >> $GITHUB_ENV
-          echo "$NEW_KUBECONFIG" >> $GITHUB_ENV
-          echo "EOF" >> $GITHUB_ENV
+      run: echo "NEW_KUBECONFIG=$(cat ./new-kubeconfig | base64 -w 0)" >> $GITHUB_ENV
+
 #      run: echo $(cat ./new-kubeconfig | base64)
 
       
