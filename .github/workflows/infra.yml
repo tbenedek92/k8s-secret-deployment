@@ -2,6 +2,8 @@ name: 'Provision infra'
 
 on:
   push:
+    branches:
+    - deployment-pipeline
     paths:
     - infra/**
   # Allows you to run this workflow manually from the Actions tab
