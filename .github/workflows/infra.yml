@@ -4,8 +4,8 @@ on:
   push:
     branches:
     - infra-pipeline
-    paths:
-    - infra/**
+    # paths:
+    # - infra/**
   pull_request:
 
 jobs:
@@ -39,7 +39,7 @@ jobs:
 
     # Generates an execution plan for Terraform
     - name: Terraform Plan
-      run: terraform plan
+      run: terraform plan -var='token=${{ secrets.LINODE_API_TOKEN }}'
       working-directory: ./infra
 
       # On push to main, build or change infrastructure according to Terraform configuration files
