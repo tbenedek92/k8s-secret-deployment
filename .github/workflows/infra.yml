@@ -67,10 +67,7 @@ jobs:
     - name: Deploy metrics-server
       working-directory: ${{ env.WORK-DIR }}
       run: helm repo add metrics-server https://kubernetes-sigs.github.io/metrics-server/ &&  
-          helm upgrade --install metrics-server metrics-server/metrics-server \
-          --create-namespace --namespace metrics-server \
-          --kubeconfig ./kube-config \
-          --values ./k8s/metrics-server-chart/values.yaml
+          helm upgrade --install metrics-server metrics-server/metrics-server --create-namespace --namespace metrics-server --kubeconfig ./kube-config --values ./k8s/metrics-server-chart/values.yaml
       
     - name: set CLUSTER_NAME envvar
       working-directory: ${{ env.WORK-DIR }}
