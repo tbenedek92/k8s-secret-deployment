@@ -88,11 +88,10 @@ jobs:
       
     - name: assemble new kube-config
       working-directory: ./infra
-      env:
-         CLUSTER_NAME: $(kubectl config get-contexts "$context" --kubeconfig=kube-config | awk '{print $3}' | tail -n 1)
-         ENDPOINT: $(kubectl config view --kubeconfig=kube-config -o jsonpath="{.clusters[?(@.name == \"${CLUSTER_NAME}\")].cluster.server}")
       run: |
-        echo "Endpoint: ${ENDPOINT}" && \
-        echo "Cluster name: ${CLUSTER_NAME}"
+        echo "CLUSTER_NAME=$(kubectl config get-contexts "$context" --kubeconfig=kube-config | awk '{print $3}' | tail -n 1)" >> $GITHUB_ENV && \
+        echo 'ENDPOINT=$(kubectl config view --kubeconfig=kube-config -o jsonpath="{.clusters[?(@.name == \"${CLUSTER_NAME}\")].cluster.server}")' >> $GITHUB_ENV && \
+        echo Endpoint: $ENDPOINT && \
+        echo Cluster name: $CLUSTER_NAME
 
         
