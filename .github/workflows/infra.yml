@@ -52,6 +52,7 @@ jobs:
     - name: Create k8s namesapce
       working-directory: ./infra
       run: kubectl create namespace secret-namespace --kubeconfig=kube-config
+      continue-on-error: true
 
     - name: Create secret in k8s
       working-directory: ./infra
