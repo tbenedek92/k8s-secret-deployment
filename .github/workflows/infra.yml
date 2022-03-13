@@ -122,6 +122,7 @@ jobs:
 
 
     - name: test
+      working-directory: ${{ env.WORK-DIR }}
       run: | 
         echo "Cluster name is ${{ env.CLUSTER_NAME }}" &&
         echo "Endpoint is ${{ env.CLUSTER_ENDPOINT }}" &&
