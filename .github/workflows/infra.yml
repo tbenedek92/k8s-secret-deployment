@@ -80,7 +80,7 @@ jobs:
       working-directory: ./infra
       run: |
         kubectl create rolebinding secret-namespace-deploy-rolebinding \
-          --role=secret-namespace-deploy-role \ 
+          --role=secret-namespace-deploy-role \
           --serviceaccount=secret-namespace:secret-namespace-deployment-sa \
           --namespace=secret-namespace \
           --kubeconfig=kube-config
