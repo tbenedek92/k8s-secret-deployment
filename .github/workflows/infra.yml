@@ -116,10 +116,19 @@ jobs:
       working-directory: ${{ env.WORK-DIR }}
       run: kubectl config set-cluster ${{ env.CLUSTER_NAME }} --kubeconfig=./new-kubeconfig --server=${{ env.CLUSTER_ENDPOINT }} --certificate-authority=./ca.crt --embed-certs=true
 
-    - name: kubeconfig set-cluster
+    - name: kubeconfig set-credentials
       working-directory: ${{ env.WORK-DIR }}
       run: kubectl config set-credentials "${{ env.SERVICE_ACCOUNT_NAME }}-${{ env.NAMESPACE }}-${{ env.CLUSTER_NAME }}" --kubeconfig=./new-kubeconfig} --token="$(kubectl get secret --namespace ${{ env.NAMESPACE }} ${{ env.SECRET_NAME}} -o json | jq -r '.data["token"]' | base64 -D)"
 
+
+    - name: kubeconfig set context
+      working-directory: ${{ env.WORK-DIR }}
+      run: kubectl config set-context "${{ env.SERVICE_ACCOUNT_NAME }}-${{ env.NAMESPACE }}-${{ env.CLUSTER_NAME }}" --kubeconfig=./new-kubeconfig --cluster=${{ CLUSTER_NAME }} --user="${{ env.SERVICE_ACCOUNT_NAME }}-${{ env.NAMESPACE }}-${{ env.CLUSTER_NAME }}" --namespace=${{ env.NAMESPACE }}
+
+    - name: kubeconfig set current context
+      working-directory: ${{ env.WORK-DIR }}
+      run: kubectl config use-context "${{ env.SERVICE_ACCOUNT_NAME }}-${{ env.NAMESPACE }}-${{ env.CLUSTER_NAME }}" --kubeconfig=./new-kubeconfig
+    
 
     - name: test
       working-directory: ${{ env.WORK-DIR }}
