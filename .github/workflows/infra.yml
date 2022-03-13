@@ -55,41 +55,13 @@ jobs:
       run: terraform apply -auto-approve -var='token=${{ secrets.LINODE_API_TOKEN }}'
     
     - name: Create k8s namesapce
-      working-directory: ${{ env.WORK-DIR }}
-      run: kubectl create namespace ${{ env.NAMESPACE }} --kubeconfig=kube-config
+      working-directory: ${{ env.WORK-DIR }}/k8s
+      run: kubectl apply -f namespace.yaml --kubeconfig=kube-config
       continue-on-error: true
 
     - name: Create secret in k8s
-      working-directory: ${{ env.WORK-DIR }}
-      run: kubectl create secret generic api-key --from-literal=API-KEY=${{ secrets.API_KEY }} -n=${{ env.NAMESPACE }}  --kubeconfig=kube-config
-      continue-on-error: true
-
-    - name: Create k8s SA
-      working-directory: ${{ env.WORK-DIR }}
-      run: kubectl create serviceaccount ${{ env.SERVICE_ACCOUNT_NAME }} -n=${{ env.NAMESPACE }} --kubeconfig=kube-config
-      continue-on-error: true
-
-    - name: Create the role which sets the necessary permissions for the SA
-      working-directory: ${{ env.WORK-DIR }}
-      run: |
-        kubectl create role secret-namespace-deploy-role \
-          --verb=create \
-          --verb=list \
-          --verb=get \
-          --verb=patch \
-          --resource=deployment,service,hpa,pdb,secret \
-          --namespace=${{ env.NAMESPACE }} \
-          --kubeconfig=kube-config
-      continue-on-error: true
-
-    - name: Create rolebinding
-      working-directory: ${{ env.WORK-DIR }}
-      run: |
-        kubectl create rolebinding secret-namespace-deploy-rolebinding \
-          --role=secret-namespace-deploy-role \
-          --serviceaccount=${{ env.NAMESPACE }}:${{ env.SERVICE_ACCOUNT_NAME }} \
-          --namespace=${{ env.NAMESPACE }} \
-          --kubeconfig=kube-config
+      working-directory: ${{ env.WORK-DIR }}/k8s/service-account
+      run: kubectl apply --kubeconfig=kube-config -f .
       continue-on-error: true
       
     - name: set CLUSTER_NAME envvar
