@@ -92,7 +92,7 @@ jobs:
       
     - name: set cluster-name new kube-config
       working-directory: ./infra
-      run: echo 'ENDPOINT=$(kubectl config view --kubeconfig=kube-config -o jsonpath="{.clusters[?(@.name == \"${{ env.CLUSTER_NAME }}\")].cluster.server}")' >> $GITHUB_ENV
+      run: echo 'ENDPOINT=$(kubectl config view --kubeconfig=kube-config -o json)' >> $GITHUB_ENV
 
       
     - name: test
