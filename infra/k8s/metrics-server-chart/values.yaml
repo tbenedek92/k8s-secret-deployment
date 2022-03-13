@@ -2,4 +2,4 @@ apiService:
   create: true
 
 args:
-  --kubelet-insecure-tls=true
+  - --kubelet-insecure-tls=true
