@@ -123,7 +123,7 @@ jobs:
 
     - name: kubeconfig set context
       working-directory: ${{ env.WORK-DIR }}
-      run: kubectl config set-context "${{ env.SERVICE_ACCOUNT_NAME }}-${{ env.NAMESPACE }}-${{ env.CLUSTER_NAME }}" --kubeconfig=./new-kubeconfig --cluster=${{ CLUSTER_NAME }} --user="${{ env.SERVICE_ACCOUNT_NAME }}-${{ env.NAMESPACE }}-${{ env.CLUSTER_NAME }}" --namespace=${{ env.NAMESPACE }}
+      run: kubectl config set-context "${{ env.SERVICE_ACCOUNT_NAME }}-${{ env.NAMESPACE }}-${{ env.CLUSTER_NAME }}" --kubeconfig=./new-kubeconfig --cluster=${{ env.CLUSTER_NAME }} --user="${{ env.SERVICE_ACCOUNT_NAME }}-${{ env.NAMESPACE }}-${{ env.CLUSTER_NAME }}" --namespace=${{ env.NAMESPACE }}
 
     - name: kubeconfig set current context
       working-directory: ${{ env.WORK-DIR }}
