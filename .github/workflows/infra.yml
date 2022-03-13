@@ -106,9 +106,7 @@ jobs:
       
     - name: extract cert from cluster
       working-directory: ./infra
-      run: kubectl get secret --kubeconfig=kube-config -n secret-namespace \
-          $(kubectl get sa --kubeconfig=kube-config secret-namespace-deployment-sa --n=secret-namespace -o json | jq -r .secrets[].name) \
-          -o json | jq -r '.data["ca.crt"]' | base64 -d > ./ca.crt
+      run: kubectl get secret --kubeconfig=kube-config -n secret-namespace $(kubectl get sa secret-namespace-deployment-sa --kubeconfig=kube-config --n=secret-namespace -o json | jq -r .secrets[].name) -o json | jq -r '.data["ca.crt"]' | base64 -d > ./ca.crt
     - name: kubeconfig set-cluster
       working-directory: ./infra
       run: kubectl config set-cluster ${{ env.CLUSTER_NAME }} --kubeconfig=./new-kubeconfig --server=${{ env.CLUSTER_ENDPOINT }} --certificate-authority=./ca.crt --embed-certs=true
