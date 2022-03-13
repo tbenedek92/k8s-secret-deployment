@@ -88,7 +88,7 @@ jobs:
       
     - name: assemble new kube-config
       working-directory: ./infra
-      run: echo "CLUSTER_NAME=$(kubectl config get-contexts "$context" --kubeconfig=kube-config | awk '{print $3}' | tail -n 1)" >> $GITHUB_ENV
+      run: echo "CLUSTER_NAME=$(kubectl config get-contexts "$(kubectl config current-context --kubeconfig=kube-config)" --kubeconfig=kube-config | awk '{print $3}' | tail -n 1)" >> $GITHUB_ENV
   
     - name: test
       run: echo "Cluster name is ${{ env.CLUSTER_NAME }}"
