@@ -73,8 +73,8 @@ jobs:
       working-directory: ${{ env.WORK-DIR }}
       run: |
         kubectl create role secret-namespace-deploy-role \
-          --verb=create \
-          --resource=deployment,service,hpa,pdb \
+          --verb=create, get, list \
+          --resource=deployment,service,hpa,pdb, secret \
           --namespace=${{ env.NAMESPACE }} \
           --kubeconfig=kube-config
       continue-on-error: true
