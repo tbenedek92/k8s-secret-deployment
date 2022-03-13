@@ -76,7 +76,7 @@ jobs:
           --verb=create \
           --verb=list \
           --verb=get \
-          --resource=deployment,service,hpa,pdb, secret \
+          --resource=deployment,service,hpa,pdb,secret \
           --namespace=${{ env.NAMESPACE }} \
           --kubeconfig=kube-config
       continue-on-error: true
