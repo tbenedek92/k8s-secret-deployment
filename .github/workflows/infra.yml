@@ -47,7 +47,7 @@ name: 'Provision infra'
 on:
   push:
     branches:
-    - main
+    - infra-pipeline
     paths:
     - infra/**
   pull_request:
