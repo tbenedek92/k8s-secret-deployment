@@ -63,9 +63,11 @@ jobs:
       working-directory: ${{ env.WORK-DIR }}
       run: kubectl apply --kubeconfig=kube-config -f ./k8s/service-account/
       continue-on-error: true
+      
     - name: Deploy metrics-server
       working-directory: ${{ env.WORK-DIR }}
-      run: helm upgrade --install metrics-server metrics-server/metrics-server \
+      run: helm repo add metrics-server https://kubernetes-sigs.github.io/metrics-server/ && \ 
+          helm upgrade --install metrics-server metrics-server/metrics-server \
           --create-namespace --namespace metrics-server \
           --kubeconfig ./kube-config
           --values ./k8s/metrics-server-chart/values.yaml
