@@ -5,9 +5,7 @@ name: Deploy to K8S
 # Controls when the workflow will run
 on:
   push:
-    # branches: [ main ]
-    branches: 
-    - deployment-pipeline
+    branches: [ main ]
   pull_request:
     branches: [ main ]
 
