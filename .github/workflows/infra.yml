@@ -129,12 +129,15 @@ jobs:
       working-directory: ${{ env.WORK-DIR }}
       run: kubectl config use-context "${{ env.SERVICE_ACCOUNT_NAME }}-${{ env.NAMESPACE }}-${{ env.CLUSTER_NAME }}" --kubeconfig=./new-kubeconfig
     
-
-    - name: test
+    - name: base64 new kube-config
       working-directory: ${{ env.WORK-DIR }}
-      run: | 
-        echo "Cluster name is ${{ env.CLUSTER_NAME }}" &&
-        echo "Endpoint is ${{ env.CLUSTER_ENDPOINT }}" &&
-        echo "Endpoint is ${{ env.SECRET_NAME }}" &&
-        cat ./new-kubeconfig
+      run: echo "NEW_KUBECONFIG=cat ./new-kubeconfig | base64" >> $GITHUB_ENV
+        
+    - name: set as repo secret
+      uses: hmanzur/actions-set-secret@v2.0.0
+      with:
+        name: 'KUBECONFIG'
+        value: ${{ env.NEW_KUBECONFIG }}
+        repository: tbenedek92/k8s-secret-deployment
+        token: ${{ secrets.GH_PAT }}
       
