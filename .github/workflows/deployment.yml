@@ -6,7 +6,9 @@ name: Deploy to K8S
 on:
   # Triggers the workflow on push or pull request events but only for the main branch
   push:
-    branches: [ main ]
+    # branches: [ main ]
+    branches: 
+    - deployment-pipeline]
   pull_request:
     branches: [ main ]
 
@@ -31,7 +33,7 @@ jobs:
         name: checkout
         
       - name: Get image name to be scanned
-        run: echo "IMAGE=cat deployment.yaml | yq \".spec.template.spec.containers[].image\"" >> $GITHUB_ENV
+        run: echo "IMAGE=$(cat deployment.yaml | yq \".spec.template.spec.containers[].image\")" >> $GITHUB_ENV
         
       - name: Scan image
         uses: anchore/scan-action@v3
