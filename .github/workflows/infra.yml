@@ -1,0 +1,138 @@
+name: 'Provision infra'
+
+on:
+  push:
+    paths:
+    - infra/**
+
+jobs:
+  terraform:
+    name: 'Provision k8s cluster'
+    runs-on: ubuntu-latest
+    environment: production
+    env:
+      WORK-DIR: ./infra
+      SERVICE_ACCOUNT_NAME: secret-namespace-deployment-sa
+      NAMESPACE: secret-namespace
+
+    # Use the Bash shell regardless whether the GitHub Actions runner is ubuntu-latest, macos-latest, or windows-latest
+    defaults:
+      run:
+        shell: bash
+
+    steps:
+    # Checkout the repository to the GitHub Actions runner
+    - name: Checkout
+      uses: actions/checkout@v2
+    - name: base64 decode gcs sa
+      working-directory: ${{ env.WORK-DIR }}
+      run: echo "${{ secrets.GCS_SA }}" | base64 -d > ./service-account.json
+
+    # Initialize a new or existing Terraform working directory by creating initial files, loading any remote state, downloading modules, etc.
+    - name: Terraform Init
+      run: terraform init
+      working-directory: ${{ env.WORK-DIR }}
+
+    # Checks that all Terraform configuration files adhere to a canonical format
+    - name: Terraform Format
+      run: terraform fmt -check
+      working-directory: ${{ env.WORK-DIR }}
+
+    # Generates an execution plan for Terraform
+    - name: Terraform Plan
+      run: terraform plan -var='token=${{ secrets.LINODE_API_TOKEN }}'
+      working-directory: ${{ env.WORK-DIR }}
+
+      # On push to main, build or change infrastructure according to Terraform configuration files
+      # Note: It is recommended to set up a required "strict" status check in your repository for "Terraform Cloud". See the documentation on "strict" required status checks for more information: https://help.github.com/en/github/administering-a-repository/types-of-required-status-checks
+    - name: Terraform Apply
+      working-directory: ${{ env.WORK-DIR }}
+      # if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+      run: terraform apply -auto-approve -var='token=${{ secrets.LINODE_API_TOKEN }}'
+    
+    - name: Create k8s namesapce
+      working-directory: ${{ env.WORK-DIR }}
+      run: kubectl create namespace ${{ env.NAMESPACE }} --kubeconfig=kube-config
+      continue-on-error: true
+
+    - name: Create secret in k8s
+      working-directory: ${{ env.WORK-DIR }}
+      run: kubectl create secret generic api-key --from-literal=API-KEY=${{ secrets.API_KEY }} -n=${{ env.NAMESPACE }}  --kubeconfig=kube-config
+      continue-on-error: true
+
+    - name: Create k8s SA
+      working-directory: ${{ env.WORK-DIR }}
+      run: kubectl create serviceaccount ${{ env.SERVICE_ACCOUNT_NAME }} -n=${{ env.NAMESPACE }} --kubeconfig=kube-config
+      continue-on-error: true
+
+    - name: Create the role which sets the necessary permissions for the SA
+      working-directory: ${{ env.WORK-DIR }}
+      run: |
+        kubectl create role secret-namespace-deploy-role \
+          --verb=create \
+          --resource=deployment,service,hpa,pdb \
+          --namespace=${{ env.NAMESPACE }} \
+          --kubeconfig=kube-config
+      continue-on-error: true
+
+    - name: Create rolebinding
+      working-directory: ${{ env.WORK-DIR }}
+      run: |
+        kubectl create rolebinding secret-namespace-deploy-rolebinding \
+          --role=secret-namespace-deploy-role \
+          --serviceaccount=${{ env.NAMESPACE }}:${{ env.SERVICE_ACCOUNT_NAME }} \
+          --namespace=${{ env.NAMESPACE }} \
+          --kubeconfig=kube-config
+      continue-on-error: true
+      
+    - name: set CLUSTER_NAME envvar
+      working-directory: ${{ env.WORK-DIR }}
+      run: echo "CLUSTER_NAME=$(kubectl config get-contexts "$(kubectl config current-context --kubeconfig=kube-config)" --kubeconfig=kube-config | awk '{print $3}' | tail -n 1)" >> $GITHUB_ENV
+      
+    - name: set CLUSTER_ENDPOINT envvar
+      working-directory: ${{ env.WORK-DIR }}
+      #run: echo 'CLUSTER_ENDPOINT=$(kubectl config view --kubeconfig=kube-config -o jsonpath="{.clusters[?(@.name == \"${{ env.CLUSTER_NAME }}\")].cluster.server}")' >> $GITHUB_ENV
+      run: echo "CLUSTER_ENDPOINT=$(kubectl config view --kubeconfig=kube-config -o jsonpath='{.clusters[?(@.name == "${{ env.CLUSTER_NAME }}")].cluster.server}')" >> $GITHUB_ENV
+
+    - name: set SECRET_NAME envvar
+      working-directory: ${{ env.WORK-DIR }}
+      #run: echo 'CLUSTER_ENDPOINT=$(kubectl config view --kubeconfig=kube-config -o jsonpath="{.clusters[?(@.name == \"${{ env.CLUSTER_NAME }}\")].cluster.server}")' >> $GITHUB_ENV
+      run: echo "SECRET_NAME=$(kubectl get sa ${{ env.SERVICE_ACCOUNT_NAME }} --kubeconfig=kube-config -n=${{ env.NAMESPACE }} -o json | jq -r .secrets[].name)" >> $GITHUB_ENV
+
+
+    - name: create new kubeconfig
+      working-directory: ${{ env.WORK-DIR }}
+      run: touch new-kubeconfig
+      
+    - name: extract cert from cluster
+      working-directory: ${{ env.WORK-DIR }}
+      run: kubectl get secret --kubeconfig=kube-config -n=${{ env.NAMESPACE }} ${{ env.SECRET_NAME }} -o json | jq -r '.data["ca.crt"]' | base64 -d > ./ca.crt
+    - name: kubeconfig set-cluster
+      working-directory: ${{ env.WORK-DIR }}
+      run: kubectl config set-cluster ${{ env.CLUSTER_NAME }} --kubeconfig=./new-kubeconfig --server=${{ env.CLUSTER_ENDPOINT }} --certificate-authority=./ca.crt --embed-certs=true
+
+    - name: kubeconfig set-credentials
+      working-directory: ${{ env.WORK-DIR }}
+      run: kubectl config set-credentials "${{ env.SERVICE_ACCOUNT_NAME }}-${{ env.NAMESPACE }}-${{ env.CLUSTER_NAME }}" --kubeconfig=./new-kubeconfig --token="$(kubectl get secret --kubeconfig=kube-config --namespace ${{ env.NAMESPACE }} ${{ env.SECRET_NAME}} -o json | jq -r '.data["token"]' | base64 -d)"
+
+
+    - name: kubeconfig set context
+      working-directory: ${{ env.WORK-DIR }}
+      run: kubectl config set-context "${{ env.SERVICE_ACCOUNT_NAME }}-${{ env.NAMESPACE }}-${{ env.CLUSTER_NAME }}" --kubeconfig=./new-kubeconfig --cluster=${{ env.CLUSTER_NAME }} --user="${{ env.SERVICE_ACCOUNT_NAME }}-${{ env.NAMESPACE }}-${{ env.CLUSTER_NAME }}" --namespace=${{ env.NAMESPACE }}
+
+    - name: kubeconfig set current context
+      working-directory: ${{ env.WORK-DIR }}
+      run: kubectl config use-context "${{ env.SERVICE_ACCOUNT_NAME }}-${{ env.NAMESPACE }}-${{ env.CLUSTER_NAME }}" --kubeconfig=./new-kubeconfig
+    
+    - name: base64 new kube-config
+      working-directory: ${{ env.WORK-DIR }}
+      run: echo "NEW_KUBECONFIG=cat ./new-kubeconfig | base64" >> $GITHUB_ENV
+      
+    - name: set as repo secret
+      uses: hmanzur/actions-set-secret@v2.0.0
+      with:
+        name: 'KUBECONFIG'
+        value: ${{ env.NEW_KUBECONFIG }}
+        repository: tbenedek92/k8s-secret-deployment
+        token: ${{ secrets.GH_PAT }}
+      
