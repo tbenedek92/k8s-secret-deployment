@@ -118,7 +118,7 @@ jobs:
 
     - name: kubeconfig set-cluster
       working-directory: ${{ env.WORK-DIR }}
-      run: kubectl config set-credentials "${{ env.SERVICE_ACCOUNT_NAME }}-${{ env.NAMESPACE }}-${{ env.CLUSTER_NAME }}" --kubeconfig="${./new-kubeconfig}" --token="$(kubectl get secret --namespace ${{ env.NAMESPACE }} ${{ env.SECRET_NAME}} -o json | jq -r '.data["token"]' | base64 -D)"
+      run: kubectl config set-credentials "${{ env.SERVICE_ACCOUNT_NAME }}-${{ env.NAMESPACE }}-${{ env.CLUSTER_NAME }}" --kubeconfig=./new-kubeconfig} --token="$(kubectl get secret --namespace ${{ env.NAMESPACE }} ${{ env.SECRET_NAME}} -o json | jq -r '.data["token"]' | base64 -D)"
 
 
     - name: test
