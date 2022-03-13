@@ -86,11 +86,15 @@ jobs:
           --kubeconfig=kube-config
       continue-on-error: true
       
-    - name: assemble new kube-config
+    - name: set cluster-name new kube-config
       working-directory: ./infra
-      run: | 
-        echo "CLUSTER_NAME=$(kubectl config get-contexts "$(kubectl config current-context --kubeconfig=kube-config)" --kubeconfig=kube-config | awk '{print $3}' | tail -n 1)" >> $GITHUB_ENV && \
-        echo 'ENDPOINT=$(kubectl config view -o jsonpath="{.clusters[?(@.name == \"${{ env.CLUSTER_NAME }}\")].cluster.server}")' >> $GITHUB_ENV
+      run: echo "CLUSTER_NAME=$(kubectl config get-contexts "$(kubectl config current-context --kubeconfig=kube-config)" --kubeconfig=kube-config | awk '{print $3}' | tail -n 1)" >> $GITHUB_ENV
+      
+    - name: set cluster-name new kube-config
+      working-directory: ./infra
+      run: echo 'ENDPOINT=$(kubectl config view -o jsonpath="{.clusters[?(@.name == \"${{ env.CLUSTER_NAME }}\")].cluster.server}")' >> $GITHUB_ENV
+
+      
     - name: test
       run: | 
         echo "Cluster name is ${{ env.CLUSTER_NAME }}"
