@@ -5,6 +5,11 @@ terraform {
       version = "1.26.1"
     }
   }
+  backend "gcs" {
+    bucket = "tf-state-k8s-secret-deployment"
+    prefix = "demo"
+    credentials = "service-account.json"
+  }
 }
 
 provider "linode" {
