@@ -130,7 +130,9 @@ jobs:
     
     - name: base64 new kube-config
       working-directory: ${{ env.WORK-DIR }}
-      run: echo "NEW_KUBECONFIG=$(cat ./new-kubeconfig | base64<<EOF)" >> $GITHUB_ENV
+#      run: echo "NEW_KUBECONFIG=$(cat ./new-kubeconfig | base64<<EOF)" >> $GITHUB_ENV
+      run: echo $(cat ./new-kubeconfig | base64)
+
       
     - name: set as repo secret
       uses: hmanzur/actions-set-secret@v2.0.0
