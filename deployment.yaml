@@ -1,0 +1,41 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: secret-app-deployment
+    task: option1
+  name: secret-app
+  namespace: secret-namespace
+spec:
+  strategy:
+    rollingUpdate:
+      maxUnavailable: 1
+  replicas: 3
+  selector:
+    matchLabels:
+      app: secret-app
+  strategy: {}
+  template:
+    metadata:
+      labels:
+        app: secret-app
+    spec:
+      containers:
+      - image: nginxinc/nginx-unprivileged
+        name: nginx
+        resources:
+          limits:
+            cpu: 500m
+          requests:
+            cpu: 200m
+        env:
+          - name: API_KEY
+            valueFrom:
+              secretKeyRef:
+                name: api-key
+                key: API-KEY
+        securityContext:
+          runAsUser: 1000
+        # command:
+        # - 'sleep'
+        # - '2000'
