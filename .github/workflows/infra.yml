@@ -23,6 +23,9 @@ jobs:
     # Checkout the repository to the GitHub Actions runner
     - name: Checkout
       uses: actions/checkout@v2
+    - name: base64 decode gcs sa
+      working-directory: ./infra
+      run: cat ${{ secrets.GCS_SA }} | base64 -d > service-account.json
 
     # Initialize a new or existing Terraform working directory by creating initial files, loading any remote state, downloading modules, etc.
     - name: Terraform Init
