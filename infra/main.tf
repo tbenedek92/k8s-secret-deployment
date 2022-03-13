@@ -6,8 +6,8 @@ terraform {
     }
   }
   backend "gcs" {
-    bucket = "tf-state-k8s-secret-deployment"
-    prefix = "demo"
+    bucket      = "tf-state-k8s-secret-deployment"
+    prefix      = "demo"
     credentials = "service-account.json"
   }
 }
