@@ -22,3 +22,9 @@ desiredReplicas = ceil[currentReplicas * ( currentMetricValue / desiredMetricVal
 
 ```
 
+### Preparation/manual steps
+The only manual steps required are to set the secrets on this repo:
+- `GCS_SA` - This is a service ccount with Google cloud storage `Storage Object Admin` priviliges on the bucket used for remote backend.
+- `GH_PAT` - GH Personal access token with repo scope. This is used to set the `KUBECONFIG` secret.
+- `LINODE_API_TOKEN` - Used for provisioning the infrastructure on Linode public cloud provider.
+- `API_KEY` - This key is mounted into the deployment.
